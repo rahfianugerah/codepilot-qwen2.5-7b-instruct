@@ -28,7 +28,6 @@ export default function Home() {
   const streamListRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     streamListRef.current?.scrollTo({
       top: streamListRef.current.scrollHeight,
@@ -36,7 +35,6 @@ export default function Home() {
     });
   }, [messages]);
 
-  // Close dropdown on outside click or Esc
   useEffect(() => {
     if (!taskOpen) return;
     function onDocClick(e: MouseEvent) {
@@ -60,7 +58,6 @@ export default function Home() {
   async function sendMessage() {
     if (!canSend) return;
 
-    // Push user message
     const userMsg: Msg = {
       id: crypto.randomUUID(),
       role: "user",
@@ -70,7 +67,6 @@ export default function Home() {
     setInput("");
     setBusy(true);
 
-    // Create streaming assistant message
     const assistId = crypto.randomUUID();
     setMessages((m) => [...m, { id: assistId, role: "assistant", content: "" }]);
 
@@ -104,7 +100,7 @@ export default function Home() {
               m.id === assistId ? { ...m, content: m.content + text } : m
             )
           );
-          // keep scrolling as we stream
+
           streamListRef.current?.scrollTo({
             top: streamListRef.current.scrollHeight,
           });
@@ -115,9 +111,9 @@ export default function Home() {
         m.map((msg) =>
           msg.id === assistId
             ? {
-                ...msg,
-                content: `> ⚠️ **Request failed**\n>\n> ${err?.message || err}`,
-              }
+              ...msg,
+              content: `> ⚠️ **Request failed**\n>\n> ${err?.message || err}`,
+            }
             : msg
         )
       );
@@ -139,7 +135,6 @@ export default function Home() {
 
   return (
     <div className="min-h-dvh bg-neutral-950 text-neutral-100 flex flex-col items-center">
-      {/* Header */}
       <header className="w-full max-w-3xl px-4 pt-6 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -152,7 +147,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Clean dropdown */}
           <div className="relative" ref={menuRef}>
             <button
               aria-haspopup="listbox"
@@ -162,9 +156,8 @@ export default function Home() {
             >
               <span className="text-neutral-200 capitalize">{task}</span>
               <svg
-                className={`h-4 w-4 transition-transform ${
-                  taskOpen ? "rotate-180" : "rotate-0"
-                }`}
+                className={`h-4 w-4 transition-transform ${taskOpen ? "rotate-180" : "rotate-0"
+                  }`}
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -182,9 +175,8 @@ export default function Home() {
                         setTask(opt);
                         setTaskOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 text-sm capitalize hover:bg-white/5 transition ${
-                        opt === task ? "text-cyan-400" : "text-neutral-200"
-                      }`}
+                      className={`w-full text-left px-3 py-2 text-sm capitalize hover:bg-white/5 transition ${opt === task ? "text-cyan-400" : "text-neutral-200"
+                        }`}
                       role="option"
                       aria-selected={opt === task}
                     >
@@ -198,43 +190,39 @@ export default function Home() {
         </div>
       </header>
 
-<main className="w-full max-w-3xl px-4 flex-1 overflow-y-auto pb-40 md:pb-48">
-  <div ref={streamListRef} className="space-y-6 py-4">
-    {messages.map((m) => (
-      <MessageBubble key={m.id} role={m.role} content={m.content} />
-    ))}
-    {busy && <TypingBubble />}
-  </div>
-</main>
+      <main className="w-full max-w-3xl px-4 flex-1 overflow-y-auto pb-40 md:pb-48">
+        <div ref={streamListRef} className="space-y-6 py-4">
+          {messages.map((m) => (
+            <MessageBubble key={m.id} role={m.role} content={m.content} />
+          ))}
+          {busy && <TypingBubble />}
+        </div>
+      </main>
 
-
-{/* Floating dock: fixed to viewport bottom, always on top */}
-<div
-  className="fixed inset-x-0 bottom-0 z-50 pb-[max(0px,env(safe-area-inset-bottom))]"
-  aria-live="polite"
->
-  <div className="mx-auto w-full max-w-2xl px-4 pb-3">
-    <div className="rounded-2xl bg-neutral-900/85 backdrop-blur-md ring-1 ring-white/10 shadow-lg shadow-black/40">
-      <AutoGrowTextarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={onKeyDown}
-        placeholder={busy ? "Streaming…" : "Ask anything — Enter to send · Shift+Enter for newline"}
-        disabled={busy}
-      />
-      <div className="flex items-center justify-between text-[11px] text-neutral-500 px-3 pb-2 -mt-1">
-        <span>{busy ? "Streaming…" : "Ready"}</span>
-        <span>Server: {BASE_URL.replace(/^https?:\/\//, "")}</span>
+      <div
+        className="fixed inset-x-0 bottom-0 z-50 pb-[max(0px,env(safe-area-inset-bottom))]"
+        aria-live="polite"
+      >
+        <div className="mx-auto w-full max-w-2xl px-4 pb-10">
+          <div className="rounded-2xl bg-neutral-900/85 backdrop-blur-md ring-1 ring-white/10 shadow-lg shadow-black/40">
+            <AutoGrowTextarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder={busy ? "Streaming…" : "Type something…"}
+              disabled={busy}
+            />
+            <div className="flex items-center justify-between text-[11px] text-neutral-500 px-3 pb-2 -mt-1">
+              <span>{busy ? "Streaming…" : "Ready"}</span>
+              <span>Server: {BASE_URL.replace(/^https?:\/\//, "")}</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
     </div>
   );
 }
-
-/* ------------------ helpers ------------------ */
 
 function AutoGrowTextarea({
   value,
@@ -269,7 +257,6 @@ function AutoGrowTextarea({
   );
 }
 
-/**  ChatGPT-style message bubble: no boxes, just clean flow */
 function MessageBubble({
   role,
   content,
@@ -282,9 +269,8 @@ function MessageBubble({
     <div className={`w-full py-3 ${isUser ? "text-cyan-300" : "text-neutral-100"}`}>
       <div className="max-w-3xl mx-auto leading-relaxed text-[15px]">
         <div
-          className={`text-[11px] mb-1 font-medium ${
-            isUser ? "text-cyan-600/70" : "text-neutral-500/70"
-          }`}
+          className={`text-[11px] mb-1 font-medium ${isUser ? "text-cyan-600/70" : "text-neutral-500/70"
+            }`}
         >
           {isUser ? "You" : "Codepilot"}
         </div>
@@ -317,7 +303,7 @@ function Markdown({ content }: { content: string }) {
           </code>
         );
       }
-      // Copy button fixed; long code scrolls under it
+
       return (
         <div className="group relative my-3">
           <button
