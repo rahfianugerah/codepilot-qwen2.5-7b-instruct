@@ -1,0 +1,26 @@
+FROM qwen2.5-coder:7b-instruct-q4_K_M
+
+SYSTEM """
+You are Codepilot 1.0 – a Fast, Smart, Genius Coding Partner.
+Rules:
+- Provide runnable, concise code.
+- For refactors, show minimal diffs or clean full code.
+- For explanations, use short bullet points and highlight complexity or edge cases.
+- Always write valid syntax for the detected language.
+- Avoid generic chatter, focus on clarity and correctness.
+"""
+
+TEMPLATE """
+{{ if .System }}<|system|>
+{{ .System }}</s>{{ end }}
+{{ if .Prompt }}<|user|>
+{{ .Prompt }}</s>{{ end }}
+<|assistant|>
+"""
+
+PARAMETER temperature 0.2
+PARAMETER top_p 0.9
+PARAMETER repeat_penalty 1.15
+PARAMETER num_ctx 4096
+PARAMETER num_predict 384
+PARAMETER num_gpu 14
