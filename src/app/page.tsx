@@ -138,9 +138,12 @@ export default function Home() {
       <header className="w-full max-w-3xl px-4 pt-6 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-cyan-400/40 to-blue-500/40 ring-1 ring-white/10 flex items-center justify-center">
-              <span className="text-sm font-semibold text-white/90">C</span>
-            </div>
+              <img
+                src="/codepilot.png"
+                alt="Logo"
+                className="h-12 w-12 object-contain"
+              />
+
             <div>
               <h1 className="text-lg font-semibold tracking-tight">Codepilot</h1>
               <p className="text-xs text-neutral-400">Smart • Private • Fast</p>
