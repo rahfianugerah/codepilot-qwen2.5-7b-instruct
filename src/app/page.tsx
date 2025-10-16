@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
@@ -10,6 +10,7 @@ export default function Home() {
     process.env.NEXT_PUBLIC_COPILOT_URL || "http://127.0.0.1:8000";
 
   type Msg = { id: string; role: "user" | "assistant"; content: string };
+
   const [messages, setMessages] = useState<Msg[]>([
     {
       id: crypto.randomUUID(),
@@ -27,7 +28,7 @@ export default function Home() {
 
   const streamListRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
+  
   useEffect(() => {
     streamListRef.current?.scrollTo({
       top: streamListRef.current.scrollHeight,
@@ -100,7 +101,6 @@ export default function Home() {
               m.id === assistId ? { ...m, content: m.content + text } : m
             )
           );
-
           streamListRef.current?.scrollTo({
             top: streamListRef.current.scrollHeight,
           });
@@ -111,9 +111,9 @@ export default function Home() {
         m.map((msg) =>
           msg.id === assistId
             ? {
-              ...msg,
-              content: `> ⚠️ **Request failed**\n>\n> ${err?.message || err}`,
-            }
+                ...msg,
+                content: `> ⚠️ **Request failed**\n>\n> ${err?.message || err}`,
+              }
             : msg
         )
       );
@@ -138,12 +138,11 @@ export default function Home() {
       <header className="w-full max-w-3xl px-4 pt-6 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-              <img
-                src="/codepilot.png"
-                alt="Logo"
-                className="h-12 w-12 object-contain"
-              />
-
+            <img
+              src="/codepilot.png"
+              alt="Logo"
+              className="h-12 w-12 object-contain"
+            />
             <div>
               <h1 className="text-lg font-semibold tracking-tight">Codepilot</h1>
               <p className="text-xs text-neutral-400">Smart • Private • Fast</p>
@@ -159,8 +158,9 @@ export default function Home() {
             >
               <span className="text-neutral-200 capitalize">{task}</span>
               <svg
-                className={`h-4 w-4 transition-transform ${taskOpen ? "rotate-180" : "rotate-0"
-                  }`}
+                className={`h-4 w-4 transition-transform ${
+                  taskOpen ? "rotate-180" : "rotate-0"
+                }`}
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -178,8 +178,9 @@ export default function Home() {
                         setTask(opt);
                         setTaskOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 text-sm capitalize hover:bg-white/5 transition ${opt === task ? "text-cyan-400" : "text-neutral-200"
-                        }`}
+                      className={`w-full text-left px-3 py-2 text-sm capitalize hover:bg-white/5 transition ${
+                        opt === task ? "text-cyan-400" : "text-neutral-200"
+                      }`}
                       role="option"
                       aria-selected={opt === task}
                     >
@@ -212,7 +213,7 @@ export default function Home() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder={busy ? "Streaming…" : "Type something…"}
+              placeholder={inputPlaceholder}
               disabled={busy}
             />
             <div className="flex items-center justify-between text-[11px] text-neutral-500 px-3 pb-2 -mt-1">
@@ -222,7 +223,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
     </div>
   );
 }
@@ -255,7 +255,7 @@ function AutoGrowTextarea({
       rows={1}
       placeholder={placeholder}
       disabled={disabled}
-      className="w-full resize-none bg-transparent outline-none placeholder:text-neutral-500 p-3 text-[15px] leading-7 max-h-[220px] disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full resize-none bg-transparent outline-none placeholder:text-neutral-500 px-4 py-3 text-[15px] leading-7 max-h-[220px] disabled:opacity-60 disabled:cursor-not-allowed"
     />
   );
 }
@@ -272,8 +272,9 @@ function MessageBubble({
     <div className={`w-full py-3 ${isUser ? "text-cyan-300" : "text-neutral-100"}`}>
       <div className="max-w-3xl mx-auto leading-relaxed text-[15px]">
         <div
-          className={`text-[11px] mb-1 font-medium ${isUser ? "text-cyan-600/70" : "text-neutral-500/70"
-            }`}
+          className={`text-[11px] mb-1 font-medium ${
+            isUser ? "text-cyan-600/70" : "text-neutral-500/70"
+          }`}
         >
           {isUser ? "You" : "Codepilot"}
         </div>
@@ -288,14 +289,46 @@ function MessageBubble({
 }
 
 function Markdown({ content }: { content: string }) {
+  const Paragraph: NonNullable<Components["p"]> = ({ children, ...props }) => {
+    const hasBlockChild = React.Children.toArray(children).some((child: any) => {
+      const t = child?.type;
+      const tag = typeof t === "string" ? t : "";
+      return (
+        tag === "pre" ||
+        tag === "div" ||
+        tag === "table" ||
+        tag === "ul" ||
+        tag === "ol" ||
+        tag === "blockquote" ||
+        /^h[1-6]$/.test(tag)
+      );
+    });
+    const Tag: any = hasBlockChild ? "div" : "p";
+    return (
+      <Tag className="mb-2" {...props}>
+        {children}
+      </Tag>
+    );
+  };
+
   const components: Components = {
+    p: Paragraph,
     h1: (p) => <h1 className="text-base font-semibold mb-2" {...p} />,
     h2: (p) => <h2 className="text-sm font-semibold mt-2 mb-1" {...p} />,
-    p: (p) => <p className="mb-2" {...p} />,
     ul: (p) => <ul className="list-disc ml-5 space-y-1 mb-2" {...p} />,
     ol: (p) => <ol className="list-decimal ml-5 space-y-1 mb-2" {...p} />,
 
-    code({ inline, className, children, ...props }) {
+    code({
+      inline,
+      className,
+      children,
+      ...props
+    }: {
+      inline?: boolean;
+      className?: string;
+      children?: React.ReactNode;
+      [key: string]: any;
+    }) {
       if (inline) {
         return (
           <code
