@@ -37,7 +37,6 @@ npm install
 ```
 Back-End Installation:
 ```bash
-cd server
 pip install -r requirements.txt
 ```
 
