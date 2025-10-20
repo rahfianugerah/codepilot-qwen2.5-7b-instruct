@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Image from "next/image";
 import type { Components } from "react-markdown";
 
 export default function Home() {
@@ -22,13 +23,22 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [task, setTask] = useState<
-    "general" | "explain" | "fix" | "refactor" | "docstring"
+    | "general"
+    | "explain"
+    | "fix"
+    | "refactor"
+    | "docstring"
+    | "review"
+    | "optimize"
+    | "testgen"
+    | "translate"
+    | "generate"
   >("general");
   const [taskOpen, setTaskOpen] = useState(false);
 
   const streamListRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     streamListRef.current?.scrollTo({
       top: streamListRef.current.scrollHeight,
@@ -64,6 +74,11 @@ export default function Home() {
       role: "user",
       content: input.trim(),
     };
+    const history = [...messages, userMsg].map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
     setMessages((m) => [...m, userMsg]);
     setInput("");
     setBusy(true);
@@ -80,6 +95,7 @@ export default function Home() {
           code: null,
           filename: null,
           task,
+          history,
         }),
       });
       if (!res.ok || !res.body) {
@@ -106,14 +122,16 @@ export default function Home() {
           });
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : typeof err === "string" ? err : JSON.stringify(err);
       setMessages((m) =>
         m.map((msg) =>
           msg.id === assistId
             ? {
-                ...msg,
-                content: `> ⚠️ **Request failed**\n>\n> ${err?.message || err}`,
-              }
+              ...msg,
+              content: `> **Request failed**\n>\n> ${message}`,
+            }
             : msg
         )
       );
@@ -132,16 +150,19 @@ export default function Home() {
   const inputPlaceholder = busy
     ? "Streaming…"
     : "Enter to Send · Shift+Enter for Newline";
-
+    
   return (
     <div className="min-h-dvh bg-neutral-950 text-neutral-100 flex flex-col items-center">
       <header className="w-full max-w-3xl px-4 pt-6 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img
+            <Image
               src="/codepilot.png"
               alt="Logo"
+              width={48}
+              height={48}
               className="h-12 w-12 object-contain"
+              priority
             />
             <div>
               <h1 className="text-lg font-semibold tracking-tight">Codepilot</h1>
@@ -158,9 +179,8 @@ export default function Home() {
             >
               <span className="text-neutral-200 capitalize">{task}</span>
               <svg
-                className={`h-4 w-4 transition-transform ${
-                  taskOpen ? "rotate-180" : "rotate-0"
-                }`}
+                className={`h-4 w-4 transition-transform ${taskOpen ? "rotate-180" : "rotate-0"
+                  }`}
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -169,25 +189,35 @@ export default function Home() {
             </button>
 
             {taskOpen && (
-              <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-neutral-900/95 shadow-xl backdrop-blur-sm z-50">
-                {(["general", "explain", "fix", "refactor", "docstring"] as const).map(
-                  (opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => {
-                        setTask(opt);
-                        setTaskOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm capitalize hover:bg-white/5 transition ${
-                        opt === task ? "text-cyan-400" : "text-neutral-200"
+              <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-neutral-900/95 shadow-xl backdrop-blur-sm z-50">
+                {(
+                  [
+                    "general",
+                    "explain",
+                    "fix",
+                    "refactor",
+                    "docstring",
+                    "review",
+                    "optimize",
+                    "testgen",
+                    "translate",
+                    "generate",
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => {
+                      setTask(opt);
+                      setTaskOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm capitalize hover:bg-white/5 transition ${opt === task ? "text-cyan-400" : "text-neutral-200"
                       }`}
-                      role="option"
-                      aria-selected={opt === task}
-                    >
-                      {opt}
-                    </button>
-                  )
-                )}
+                    role="option"
+                    aria-selected={opt === task}
+                  >
+                    {opt}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -235,8 +265,8 @@ function AutoGrowTextarea({
   disabled,
 }: {
   value: string;
-  onChange: (e: any) => void;
-  onKeyDown: (e: any) => void;
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
+  onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement>;
   placeholder?: string;
   disabled?: boolean;
 }) {
@@ -272,9 +302,8 @@ function MessageBubble({
     <div className={`w-full py-3 ${isUser ? "text-cyan-300" : "text-neutral-100"}`}>
       <div className="max-w-3xl mx-auto leading-relaxed text-[15px]">
         <div
-          className={`text-[11px] mb-1 font-medium ${
-            isUser ? "text-cyan-600/70" : "text-neutral-500/70"
-          }`}
+          className={`text-[11px] mb-1 font-medium ${isUser ? "text-cyan-600/70" : "text-neutral-500/70"
+            }`}
         >
           {isUser ? "You" : "Codepilot"}
         </div>
@@ -289,45 +318,21 @@ function MessageBubble({
 }
 
 function Markdown({ content }: { content: string }) {
-  const Paragraph: NonNullable<Components["p"]> = ({ children, ...props }) => {
-    const hasBlockChild = React.Children.toArray(children).some((child: any) => {
-      const t = child?.type;
-      const tag = typeof t === "string" ? t : "";
-      return (
-        tag === "pre" ||
-        tag === "div" ||
-        tag === "table" ||
-        tag === "ul" ||
-        tag === "ol" ||
-        tag === "blockquote" ||
-        /^h[1-6]$/.test(tag)
-      );
-    });
-    const Tag: any = hasBlockChild ? "div" : "p";
-    return (
-      <Tag className="mb-2" {...props}>
-        {children}
-      </Tag>
-    );
-  };
-
   const components: Components = {
-    p: Paragraph,
+    p: (props) => <div className="mb-2" {...props} />,
     h1: (p) => <h1 className="text-base font-semibold mb-2" {...p} />,
     h2: (p) => <h2 className="text-sm font-semibold mt-2 mb-1" {...p} />,
     ul: (p) => <ul className="list-disc ml-5 space-y-1 mb-2" {...p} />,
     ol: (p) => <ol className="list-decimal ml-5 space-y-1 mb-2" {...p} />,
-
     code({
       inline,
       className,
       children,
       ...props
-    }: {
+    }: React.HTMLAttributes<HTMLElement> & {
       inline?: boolean;
       className?: string;
       children?: React.ReactNode;
-      [key: string]: any;
     }) {
       if (inline) {
         return (
@@ -339,7 +344,6 @@ function Markdown({ content }: { content: string }) {
           </code>
         );
       }
-
       return (
         <div className="group relative my-3">
           <button
@@ -351,7 +355,6 @@ function Markdown({ content }: { content: string }) {
           >
             Copy
           </button>
-
           <div className="overflow-x-auto rounded-xl bg-neutral-900/90 ring-1 ring-white/10">
             <pre className="p-3 pr-12">
               <code className={`font-mono ${className || ""}`} {...props}>
@@ -362,7 +365,6 @@ function Markdown({ content }: { content: string }) {
         </div>
       );
     },
-
     blockquote: (p) => (
       <blockquote
         className="border-l-2 border-neutral-700 pl-3 italic text-neutral-300 mb-2"
