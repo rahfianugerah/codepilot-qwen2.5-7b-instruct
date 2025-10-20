@@ -12,7 +12,7 @@
     Codepilot
   </h3>
   <p>
-    Qwen 2.5-Coder: 7B Powered Offline Copilot built with Next.js, FastAPI, and Ollama.
+    Qwen 2.5-Coder: 7B Instruct Powered Offline Copilot built with Next.js, FastAPI, and Ollama.
   </p>
 </div>
 
@@ -29,7 +29,7 @@ ollama pull qwen2.5-coder:7b-instruct-q4_K_M
 ```
 Inside the folder, run:
 ```bash
-ollama create codepilot -f Modelfile
+ollama create codepilot-qwen2_5-coder-7b-instruct -f Modelfile
 ```
 Front-End Installation:
 ```bash
@@ -91,8 +91,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 <p align="justify">
 This project is licensed under the MIT License. This means you are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software. The full text of the license is available in the <a href="https://github.com/rahfianugerah/codepilot/blob/main/LICENSE">LICENSE</a> file. By using this project, you agree to include the license notice and disclaimers in all copies or substantial portions of the Software. For more details on the terms and conditions of the MIT License, please refer to the license file.
 </p>
-
----
 
 ### Author
 GitHub: [@rahfianugerah](https://www.github.com/rahfianugerah)
