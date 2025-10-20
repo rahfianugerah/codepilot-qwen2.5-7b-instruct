@@ -7,7 +7,7 @@
 ![Build](https://img.shields.io/badge/Build-Passing-green)
 
 <div align="center">
-  <img src="https://github.com/rahfianugerah/codepilot/blob/main/public/codepilot2.png" height=150 width=150 />
+  <img src="https://github.com/rahfianugerah/codepilot/blob/main/public/codepilot.png" height=150 width=150 />
   <h3>
     Codepilot
   </h3>
